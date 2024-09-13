@@ -1,9 +1,12 @@
+#code version: Jun 2024 / Cleaned up Sep 2024 for clarity
+#there is an api get bug somewhere; I'm guessing it has something to do with a failure to get data at night.
+#I have never run into that issue when using the widget during bus operating hours.
+
 import requests
 import json
 from datetime import datetime, timezone
 import pytz
 import time
-#from tabulate import tabulate
 
 def getEtaData(stopId):
   timeSort = []
@@ -29,9 +32,6 @@ def getEtaData(stopId):
       etaEpoch = etaLocal.astimezone(pytz.utc).timestamp()
 
       timeTill = (int(etaEpoch) - int(currentEpoch))//60 #floor division: round DOWN to nearest integer
-
-
-      
       
       #determine route status
       routeStatus = 1
