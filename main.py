@@ -20,18 +20,27 @@ window.overrideredirect(True)
 window.wm_attributes("-transparentcolor", "#8f0000")
 
 ###Image filepath
-imageFilename = "busStopRed.png"
+imageFilename = "busStopRed_corrected.png"
 currentDir = pathlib.Path(__file__).parent.resolve()
 imgPath = os.path.join(currentDir, imageFilename)
 
 
 global globalUpdate
 
+def do_popup(event):
+    try:
+        m.tk_popup(event.x_root, event.y_root)
+    finally:
+        m.grab_release()
+
+def closeApp():
+    #print("Hello world!")
+    quit()
 
 def updateBusInfo():
     global globalUpdate
     
-    globalUpdate = window.after(60000, updateBusInfo)
+    globalUpdate = window.after(30000, updateBusInfo)
     
     busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
 
@@ -73,14 +82,11 @@ def updateBusInfo():
     nineOneTimes.config(text = busTimes[0])
     mBusArrival.config(text = nextArrival[1])
     mBusTimes.config(text = busTimes[1])
-
     
 def manualUpdate():
     #print("manually called")
     window.after_cancel(globalUpdate)
     updateBusInfo()
-
-
 
 def time():
     current = datetime.now()
@@ -100,22 +106,15 @@ signLabel = tk.Label(window, image = bgImage)
 signLabel.place(relx = 0.5, rely = 0.5, anchor='center')
 
 
-
-
 timeLbl = tk.Label(window, font=('Helvetica', 26, 'bold'),
             foreground='#333333', bg='white', bd = 0)
 
-
-    
 dateLbl = tk.Label(window, text = datetime.now().strftime('%a - %d %b %Y'), font=('Helvetica', 10),
                    fg = '#333333', bg = 'white', bd = 0)
 #todo: update date data via function?
 
-
-
 timeLbl.place(relx = 0.5, rely = 0.93, anchor='center')
 dateLbl.place(relx = 0.5, rely = 0.995, anchor = 's')
-
 
 ##### Top Frame
 
@@ -145,7 +144,10 @@ mBusTimes.grid(row=1, column = 0, columnspan = 2, sticky = 'n', padx=(2, 2))
 mBusMin = tk.Label(bottomFrame, text = " min", font=('Helvetica', 8, 'bold'), fg = 'black', bg = 'white', bd=0)
 mBusMin.grid(row=0, column=1,sticky='sw', pady=(0, 9), padx=(0, 2))
 
+m = tk.Menu(window, tearoff=0)
+m.add_command(label="Close App", command= closeApp)
 
+signLabel.bind("<Button-3>", do_popup)
 
 time()
 updateBusInfo()
