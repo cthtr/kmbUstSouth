@@ -42,57 +42,60 @@ def updateBusInfo():
     
     globalUpdate = window.after(30000, updateBusInfo)
     
-    busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
+    try:
+        busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
 
-    nextArrival = []
-    busTimes = []
+        nextArrival = []
+        busTimes = []
 
-    #print(busNow)
+        for key in busNow:
 
-    for key in busNow:
-        #print(key)
-        #print(busNow[key][0][2])
-        if busNow[key][0][2] != -1: #still have bus
-            nextArrival.append(busNow[key][0][1])
-            thisBusHours = ""
+            if busNow[key][0][2] != -1: #still have bus
+                nextArrival.append(busNow[key][0][1])
+                thisBusHours = ""
 
-            routeBuses = busNow[key]
-            numBus = len(routeBuses)
-            for i in range(numBus): 
+                routeBuses = busNow[key]
+                numBus = len(routeBuses)
+                for i in range(numBus): 
 
-                if(i < (numBus - 1)):
-                   thisBusHours += (routeBuses[i][0] + " > ")
-                else:
-                    if(routeBuses[i][2] == 0 and numBus <=2):
-                        #last bus
-                        thisBusHours += (routeBuses[i][0] + " (Last)")
+                    if(i < (numBus - 1)):
+                        thisBusHours += (routeBuses[i][0] + " > ")
                     else:
-                        thisBusHours += routeBuses[i][0]
-            
-            #print(routeBuses)
-            busTimes.append(thisBusHours)
+                        if(routeBuses[i][2] == 0 and numBus <=2):
+                            #last bus
+                            thisBusHours += (routeBuses[i][0] + " (Last)")
+                        else:
+                            thisBusHours += routeBuses[i][0]
+                
+                #print(routeBuses)
+                busTimes.append(thisBusHours)
 
-        else: #no more bus
-            #print(key + "no bus")
-            nextArrival.append(" - ")
-            busTimes.append("last bus has passed")
+            else: #no more bus
+                #print(key + "no bus")
+                nextArrival.append(" - ")
+                busTimes.append("last bus has passed")
+    except:
+        nextArrival = ['?', '?']
+        busTimes = ['Disconnected', 'No internet']
+        pass
 
+    finally:
 
-    nineOneArrival.config(text = nextArrival[0])
-    nineOneTimes.config(text = busTimes[0])
-    mBusArrival.config(text = nextArrival[1])
-    mBusTimes.config(text = busTimes[1])
+        nineOneArrival.config(text = nextArrival[0])
+        nineOneTimes.config(text = busTimes[0])
+        mBusArrival.config(text = nextArrival[1])
+        mBusTimes.config(text = busTimes[1])
     
 def manualUpdate():
     #print("manually called")
     window.after_cancel(globalUpdate)
     updateBusInfo()
 
-def time():
+def displayTime():
     current = datetime.now()
     string = current.strftime('%H:%M:%S')
     timeLbl.config(text=current.strftime('%H:%M:%S'))
-    timeLbl.after(1000, time)
+    timeLbl.after(1000, displayTime)
     if current.hour == 0 and current.second == 0:
         dateLbl.config(text = datetime.now().strftime('%a - %d %b %Y'))
 
@@ -149,6 +152,6 @@ m.add_command(label="Close App", command= closeApp)
 
 signLabel.bind("<Button-3>", do_popup)
 
-time()
+displayTime()
 updateBusInfo()
 window.mainloop()
