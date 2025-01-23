@@ -39,20 +39,25 @@ def closeApp():
 
 def updateBusInfo():
     global globalUpdate
-    
     globalUpdate = window.after(30000, updateBusInfo)
     
     try:
-        busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
-
+        #busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
+        busNow = getEtaData(southGateNormal)
         nextArrival = []
         busTimes = []
 
-        for key in busNow:
+        for arrObj in busNow:
 
-            if busNow[key][0][2] != -1: #still have bus
-                nextArrival.append(busNow[key][0][1])
+            if arrObj.status != -1:
+                nextArrival.append(arrObj.timeTill)
                 thisBusHours = ""
+         
+            # if busNow[key][0][2] != -1: #still have bus
+            #     nextArrival.append(busNow[key][0][1])
+            #     thisBusHours = ""
+
+############################################################### On hold
 
                 routeBuses = busNow[key]
                 numBus = len(routeBuses)
