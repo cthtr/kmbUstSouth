@@ -34,7 +34,6 @@ def do_popup(event):
         m.grab_release()
 
 def closeApp():
-    #print("Hello world!")
     quit()
 
 def updateBusInfo():
@@ -42,63 +41,50 @@ def updateBusInfo():
     globalUpdate = window.after(30000, updateBusInfo)
     
     try:
-        #busNow = getEtaData('B002CEF0DBC568F5')[1] #dictionary - key: bus route, value: list[('time', difference, status)]
         busNow = getEtaData(southGateNormal)
         nextArrival = []
         busTimes = []
 
-        for arrObj in busNow:
+        buses = ([r for r in busNow if r.route == '91'], [r for r in busNow if r.route.upper() == '91M'])
 
-            if arrObj.status != -1:
-                nextArrival.append(arrObj.timeTill)
-                thisBusHours = ""
-         
-            # if busNow[key][0][2] != -1: #still have bus
-            #     nextArrival.append(busNow[key][0][1])
-            #     thisBusHours = ""
+        for bus in buses:   # [0]: 91, [1]: 91M
 
-############################################################### On hold
+            # sort in place according to time until bus
+            bus.sort(key = lambda x: x.timeTill)
 
-                routeBuses = busNow[key]
-                numBus = len(routeBuses)
-                for i in range(numBus): 
-
-                    if(i < (numBus - 1)):
-                        thisBusHours += (routeBuses[i][0] + " > ")
-                    else:
-                        if(routeBuses[i][2] == 0 and numBus <=2):
-                            #last bus
-                            thisBusHours += (routeBuses[i][0] + " (Last)")
-                        else:
-                            thisBusHours += routeBuses[i][0]
-                
-                #print(routeBuses)
-                busTimes.append(thisBusHours)
-
-            else: #no more bus
-                #print(key + "no bus")
+            if bus[0].status == -1: # No more buses
                 nextArrival.append(" - ")
                 busTimes.append("last bus has passed")
+
+            else:
+                # append time till for nearest bus
+                nextArrival.append(bus[0].timeTill)
+
+                # append time string for up to 3 buses
+                displayTimes = [x.timeString + (" (Last)" if x.status == 0 else "") for x in bus if x.status != -1]
+                busTimes.append(" > ".join(displayTimes[:3]))
+
+        # End of bus for-loop
+
     except:
+        # Any error (mostly used to catch network issues)
         nextArrival = ['?', '?']
         busTimes = ['Disconnected', 'No internet']
         pass
 
     finally:
-
+        # Config output to tkinter
         nineOneArrival.config(text = nextArrival[0])
         nineOneTimes.config(text = busTimes[0])
         mBusArrival.config(text = nextArrival[1])
         mBusTimes.config(text = busTimes[1])
     
 def manualUpdate():
-    #print("manually called")
     window.after_cancel(globalUpdate)
     updateBusInfo()
 
 def displayTime():
     current = datetime.now()
-    string = current.strftime('%H:%M:%S')
     timeLbl.config(text=current.strftime('%H:%M:%S'))
     timeLbl.after(1000, displayTime)
     if current.hour == 0 and current.second == 0:
@@ -106,13 +92,8 @@ def displayTime():
 
 
 bgImage = tk.PhotoImage(file=imgPath)
-#img_Label = tk.Label(image=click_btn)
-#button = tk.Button(window, image=click_btn, command = manualUpdate, borderwidth=0, activebackground = '#0078D7')
-
-#button.place(relx = 0.5, rely = 0.5, anchor='center')
 signLabel = tk.Label(window, image = bgImage)
 signLabel.place(relx = 0.5, rely = 0.5, anchor='center')
-
 
 timeLbl = tk.Label(window, font=('Helvetica', 26, 'bold'),
             foreground='#333333', bg='white', bd = 0)
@@ -152,6 +133,7 @@ mBusTimes.grid(row=1, column = 0, columnspan = 2, sticky = 'n', padx=(2, 2))
 mBusMin = tk.Label(bottomFrame, text = " min", font=('Helvetica', 8, 'bold'), fg = 'black', bg = 'white', bd=0)
 mBusMin.grid(row=0, column=1,sticky='sw', pady=(0, 9), padx=(0, 2))
 
+# Popup menu for right click
 m = tk.Menu(window, tearoff=0)
 m.add_command(label="Close App", command= closeApp)
 
