@@ -8,17 +8,19 @@ import pathlib, os
 southGateNormal = 'B002CEF0DBC568F5'
 southGateSpecial = 'E9018F8A7E096544'
 
+pinFlag = False
+
 ###Canvas setup
 window = tk.Tk()
 xloc = window.winfo_screenwidth() - 330
 yloc = window.winfo_screenheight() - 480
 window.minsize(160, 240)
 window.maxsize(320, 480)
-window.geometry('%dx%d+%d+%d' % (320, 480, xloc, yloc))
+
+window.geometry(f'{320}x{480}+{xloc}+{yloc}')
 window.configure(background='#8f0000')
 window.overrideredirect(True)
 window.wm_attributes("-transparentcolor", "#8f0000")
-
 ###Image filepath
 imageFilename = "busStopRed_corrected.png"
 currentDir = pathlib.Path(__file__).parent.resolve()
@@ -44,8 +46,15 @@ def repositionApp(side = "right"):
     else:
         xloc = window.winfo_screenwidth() - 330
         yloc = window.winfo_screenheight() - 480
+    window.wm_geometry(f'{320}x{480}+{xloc}+{yloc}')
     
-    window.geometry('%dx%d+%d+%d' % (320, 480, xloc, yloc))
+def pinApp():
+    global m
+    global pinFlag
+    pinFlag = not pinFlag
+    window.attributes('-topmost', pinFlag)
+    m.entryconfigure(2, label="Pin App" if pinFlag == False else "Unpin App")
+    
 
 
 def updateBusInfo():
@@ -74,7 +83,7 @@ def updateBusInfo():
 
                 # append time string for up to 3 buses
                 displayTimes = [x.timeString for x in bus if x.status != -1]
-                if(len(bus) < 3):
+                if(len(bus) < 3 and bus[-1].status == 0):
                     displayTimes[-1] += " (Last)"
                 busTimes.append(" > ".join(displayTimes[:3]))
 
@@ -149,8 +158,9 @@ mBusMin.grid(row=0, column=1,sticky='sw', pady=(0, 9), padx=(0, 2))
 
 # Popup menu for right click
 m = tk.Menu(window, tearoff=0)
-m.add_command(label="Reposition App Left", command=repositionApp("left"))
-m.add_command(label="Reposition App Right", command=repositionApp("right"))
+m.add_command(label="Reposition App Left", command= lambda: repositionApp("left"))
+m.add_command(label="Reposition App Right", command= lambda: repositionApp("right"))
+m.add_command(label="Pin App", command = pinApp)
 m.add_command(label="Close App", command= closeApp)
 
 signLabel.bind("<Button-3>", do_popup)
