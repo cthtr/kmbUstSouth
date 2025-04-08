@@ -36,6 +36,18 @@ def do_popup(event):
 def closeApp():
     quit()
 
+def repositionApp(side = "right"):
+    global window
+    if side == "left":
+        xloc = 0
+        yloc = window.winfo_screenheight() - 480
+    else:
+        xloc = window.winfo_screenwidth() - 330
+        yloc = window.winfo_screenheight() - 480
+    
+    window.geometry('%dx%d+%d+%d' % (320, 480, xloc, yloc))
+
+
 def updateBusInfo():
     global globalUpdate
     globalUpdate = window.after(30000, updateBusInfo)
@@ -61,7 +73,9 @@ def updateBusInfo():
                 nextArrival.append(bus[0].timeTill)
 
                 # append time string for up to 3 buses
-                displayTimes = [x.timeString + (" (Last)" if x.status == 0 else "") for x in bus if x.status != -1]
+                displayTimes = [x.timeString for x in bus if x.status != -1]
+                if(len(bus) < 3):
+                    displayTimes[-1] += " (Last)"
                 busTimes.append(" > ".join(displayTimes[:3]))
 
         # End of bus for-loop
@@ -135,6 +149,8 @@ mBusMin.grid(row=0, column=1,sticky='sw', pady=(0, 9), padx=(0, 2))
 
 # Popup menu for right click
 m = tk.Menu(window, tearoff=0)
+m.add_command(label="Reposition App Left", command=repositionApp("left"))
+m.add_command(label="Reposition App Right", command=repositionApp("right"))
 m.add_command(label="Close App", command= closeApp)
 
 signLabel.bind("<Button-3>", do_popup)
